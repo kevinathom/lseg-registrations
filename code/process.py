@@ -1,13 +1,29 @@
-# Open files
-#ProductRegistrationSummaryRequest_YYYYMMDD.csv
-#AccountstoCheck-LSEG.xlsx
+# Libraries
+import os
+import pandas as pd
+import re
 
-# Remove old records from today's file
-#Full duplicate compared to master file
+# Open files
+os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
+dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
+dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
+
+dat_today = pd.read_csv(dat_today_fname)
+dat_ongoing = pd.read_excel(dat_ongoing_fname)
+
+# Remove full duplicate records from today's file
+dat_today.drop(dat_today[dat_today.duplicated(keep = 'first')].index, inplace=True)
+dat_today.reset_index(inplace=True, drop=True)
+dat_today.drop(dat_today[pd.merge(dat_today, dat_ongoing, on=list(dat_today.columns), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, inplace=True)
+dat_today.reset_index(inplace=True, drop=True)
 
 # Flag potential duplicates
-#Full duplicates in today's file
+dat_today["Flag_Duplicate"] = ""
 #Partial duplicates in today's file
+dat_today.loc[dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] = dat_today.loc[dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] + "Duplicated new name on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
+##email prefix
 #Partial duplicate compared to master file
+dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["FIRST NAME", "LAST NAME"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] = dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["FIRST NAME", "LAST NAME"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] + "Duplicated old name on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
+##email prefix
 
 # 

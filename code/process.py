@@ -30,5 +30,6 @@ dat_today["Email_Prefix"] = dat_today["COMPANY EMAIL"].str.extract(r'(.+?(?=\@))
 dat_today.loc[dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] = dat_today.loc[dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] + "Duplicated new email prefix on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
 dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] = dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] + "Duplicated old email prefix on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
 
-# Merge data
-
+# Merge data to ongoing file
+dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
+#dat_today.to_excel(excel_writer="dat_ongoing_fname", sheet_name-"ProductRegistrationSummaryReque", startrow=len(dat_ongoing.index), colulmns=dat_today.columns.tolist(), index=False, header=False)

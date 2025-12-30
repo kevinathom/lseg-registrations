@@ -7,8 +7,8 @@ import re
 
 # Open files
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
-dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
-dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
+dat_today_fname = f"TEST-ProductRegistrationSummaryRequest_20251202.csv"
+dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
 
 dat_today = pd.read_csv(dat_today_fname)
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)

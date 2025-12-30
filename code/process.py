@@ -9,7 +9,7 @@ dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
 dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
 
 dat_today = pd.read_csv(dat_today_fname)
-dat_ongoing = pd.read_excel(dat_ongoing_fname)
+dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
 
 # Remove full duplicate records from today's file
 dat_today.drop(dat_today[dat_today.duplicated(keep = 'first')].index, inplace=True)
@@ -32,4 +32,5 @@ dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"
 
 # Merge data to ongoing file
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
-#dat_today.to_excel(excel_writer="dat_ongoing_fname", sheet_name-"ProductRegistrationSummaryReque", startrow=len(dat_ongoing.index), colulmns=dat_today.columns.tolist(), index=False, header=False)
+dat_ongoing = pd.concat([dat_ongoing, dat_today], sort=False, ignore_index=True).fillna("")
+dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="ProductRegistrationSummaryReque", index=False)

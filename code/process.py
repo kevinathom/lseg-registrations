@@ -21,15 +21,15 @@ dat_today.drop(dat_today[pd.merge(dat_today, dat_ongoing, on=list(dat_today.colu
 dat_today.reset_index(inplace=True, drop=True)
 
 # Flag potential duplicates
+dat_today["Email_Prefix"] = dat_today["COMPANY EMAIL"].str.extract(r'(.+?(?=\@))')
 dat_today["Flag_Duplicate"] = ""
 
 ## Name
-dat_today.loc[dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] = dat_today.loc[dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] + "Duplicated new name on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
+dat_today.loc[dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = False)].index, "Flag_Duplicate"] = dat_today.loc[dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = False)].index, "Flag_Duplicate"] + "Repeat name in new file, " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
 dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["FIRST NAME", "LAST NAME"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] = dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["FIRST NAME", "LAST NAME"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] + "Duplicated old name on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
 
 ## Email
-dat_today["Email_Prefix"] = dat_today["COMPANY EMAIL"].str.extract(r'(.+?(?=\@))')
-dat_today.loc[dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] = dat_today.loc[dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = 'first')].index, "Flag_Duplicate"] + "Duplicated new email prefix on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
+dat_today.loc[dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = False)].index, "Flag_Duplicate"] = dat_today.loc[dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = False)].index, "Flag_Duplicate"] + "Repeat email prefix in new file, " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
 dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] = dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index, "Flag_Duplicate"] + "Duplicated old email prefix on " + re.search('\\_(.*)\\.', dat_today_fname).group(1) + ". "
 
 # Merge data to ongoing file

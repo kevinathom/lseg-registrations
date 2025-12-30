@@ -3,6 +3,8 @@ import os
 import pandas as pd
 import re
 
+# Prompt user for files
+
 # Open files
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
 dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
@@ -34,3 +36,6 @@ dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
 dat_ongoing = pd.concat([dat_ongoing, dat_today], sort=False, ignore_index=True).fillna("")
 dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="ProductRegistrationSummaryReque", index=False)
+
+# Prompt user to look up accounts and fill fields for next step
+

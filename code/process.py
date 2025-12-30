@@ -35,7 +35,10 @@ dat_today.loc[dat_today[pd.merge(dat_today, dat_ongoing, on=list(["Email_Prefix"
 # Merge data to ongoing file
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
 dat_ongoing = pd.concat([dat_ongoing, dat_today], sort=False, ignore_index=True).fillna("")
-dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="ProductRegistrationSummaryReque", index=False)
+dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
+# Attempt to append to file, but it overwrites anyway
+#dat_today.to_excel(dat_ongoing_fname, sheet_name="in", startrow=len(dat_ongoing.index)+1, columns=dat_today.columns.tolist(), index=False, header=False)
 
 # Prompt user to look up accounts and fill fields for next step
 
+# Check for next steps

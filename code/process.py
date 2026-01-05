@@ -2,10 +2,11 @@
 import os
 import pandas as pd
 import re
+from datetime import datetime
 
 # Prompt user for files
 
-# Open files
+# Access files
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
 dat_today_fname = f"TEST-ProductRegistrationSummaryRequest_20251202.csv"
 dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
@@ -26,7 +27,7 @@ dat_today["Flag_Incoming"] = ""
 file_date = re.search('\\_(.*)\\.', dat_today_fname).group(1)
 
 ## Alumni email
-mask = dat_today["COMPANY EMAIL"].str.contains("(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)
+mask = dat_today["COMPANY EMAIL"].str.contains(r"(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)
 dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Alumni-style email. "
 
 ## Duplicate name
@@ -50,4 +51,14 @@ dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 
 # Prompt user to look up accounts and fill fields for next step
 
-# Check for next steps
+# Re-access file
+dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+
+# Assess next actions
+mask_to_ignore = []
+
+## Follow-up due
+mask = dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] != ""].index #exclude to-ignore
+mask_to_ignore.append(mask)
+mask = dat_ongoing.loc[mask, "Followup_Scheduled"] <= datetime.today()).index #get index of items due
+#append message "Follow-up due"

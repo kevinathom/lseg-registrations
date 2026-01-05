@@ -22,24 +22,24 @@ dat_today.reset_index(inplace=True, drop=True)
 
 # Flag potential issues
 dat_today["Email_Prefix"] = dat_today["COMPANY EMAIL"].str.extract(r'(.+?(?=\@))')
-dat_today["Flag_Duplicate"] = ""
+dat_today["Flag_Incoming"] = ""
 file_date = re.search('\\_(.*)\\.', dat_today_fname).group(1)
 
 ## Alumni email
 mask = dat_today["COMPANY EMAIL"].str.contains("(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)
-dat_today.loc[mask, "Flag_Duplicate"] = dat_today.loc[mask, "Flag_Duplicate"] + f"Alumni-style email. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Alumni-style email. "
 
 ## Duplicate name
 mask = dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = False)].index
-dat_today.loc[mask, "Flag_Duplicate"] = dat_today.loc[mask, "Flag_Duplicate"] + f"Repeated name in {file_date} file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Repeated name in {file_date} file. "
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["FIRST NAME", "LAST NAME"]), on=list(["FIRST NAME", "LAST NAME"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
-dat_today.loc[mask, "Flag_Duplicate"] = dat_today.loc[mask, "Flag_Duplicate"] + f"Name from {file_date} exists in old file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Name from {file_date} exists in old file. "
 
 ## Duplicate email
 mask = dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = False)].index
-dat_today.loc[mask, "Flag_Duplicate"] = dat_today.loc[mask, "Flag_Duplicate"] + "Repeated email prefix in {file_date} file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + "Repeated email prefix in {file_date} file. "
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["Email_Prefix"]), on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
-dat_today.loc[mask, "Flag_Duplicate"] = dat_today.loc[mask, "Flag_Duplicate"] + "Email prefix from {file_date} exists in old file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + "Email prefix from {file_date} exists in old file. "
 
 # Merge data to ongoing file
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)

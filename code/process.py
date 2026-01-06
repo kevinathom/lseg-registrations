@@ -38,9 +38,9 @@ dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"
 
 ## Duplicate email
 mask = dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = False)].index
-dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + "Repeated email prefix in {file_date} file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f "Repeated email prefix in {file_date} file. "
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["Email_Prefix"]), on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
-dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + "Email prefix from {file_date} exists in old file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Email prefix from {file_date} exists in old file. "
 
 # Merge data to ongoing file
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
@@ -58,7 +58,6 @@ dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=Fal
 mask_to_ignore = []
 
 ## Follow-up due
-mask = dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] != ""].index #exclude to-ignore
-mask_to_ignore.append(mask)
-mask = dat_ongoing.loc[mask, "Followup_Scheduled"] <= datetime.today()).index #get index of items due
+mask_to_ignore.append(dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] == ""].index)
+mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_Scheduled"], format='YYYY-MM-DD') <= datetime.today()].index #get index of items due
 #append message "Follow-up due"

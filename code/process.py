@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import re
 from datetime import datetime
+from itertools import compress
 
 # Prompt user for files
 
@@ -44,6 +45,9 @@ dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["Email_Prefix"]), on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
 dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Email prefix from {file_date} exists in old file. "
 
+# Mark today's records as new
+dat_today["New_Record"] = file_date
+
 # Merge data to ongoing file
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
 dat_ongoing = pd.concat([dat_ongoing, dat_today], sort=False, ignore_index=True).fillna("")
@@ -57,12 +61,20 @@ dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
 
 # Assess next actions
-mask_iterate = []
+mask_iterate = list(dat_ongoing.index)
 
 ## Follow-up due
-mask_iterate = mask_iterate + list(dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] == ""].index)
-mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_Scheduled"], format='YYYY-MM-DD') <= datetime.today()].index #get index of items due
+mask = dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] == ""].index
+mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+
+mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_Scheduled"], format='YYYY-MM-DD') <= datetime.today()].index
 dat_ongoing.loc[mask, "New_Action"] = dat_ongoing.loc[mask, "New_Action"] + "Follow up. "
 dat_ongoing.loc[mask, "Followup_Scheduled"] = ""
 
-## Next
+## Alumni account
+
+
+# Merge data to ongoing file
+dat_ongoing["New_Record"] = ""
+dat_ongoing.sort_values(by=["New_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
+dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)

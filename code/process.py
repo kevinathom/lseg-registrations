@@ -27,18 +27,20 @@ dat_today["Flag_Incoming"] = ""
 file_date = re.search('\\_(.*)\\.', dat_today_fname).group(1)
 
 ## Alumni email
-mask = dat_today["COMPANY EMAIL"].str.contains(r"(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)
+mask = dat_today[dat_today["COMPANY EMAIL"].str.contains(r"(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)].index
 dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Alumni-style email. "
 
 ## Duplicate name
 mask = dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep = False)].index
 dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Repeated name in {file_date} file. "
+
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["FIRST NAME", "LAST NAME"]), on=list(["FIRST NAME", "LAST NAME"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
 dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Name from {file_date} exists in old file. "
 
 ## Duplicate email
 mask = dat_today[dat_today.loc[:, ["Email_Prefix"]].duplicated(keep = False)].index
-dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f "Repeated email prefix in {file_date} file. "
+dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Repeated email prefix in {file_date} file. "
+
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["Email_Prefix"]), on=list(["Email_Prefix"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
 dat_today.loc[mask, "Flag_Incoming"] = dat_today.loc[mask, "Flag_Incoming"] + f"Email prefix from {file_date} exists in old file. "
 
@@ -55,9 +57,12 @@ dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
 
 # Assess next actions
-mask_to_ignore = []
+mask_iterate = []
 
 ## Follow-up due
-mask_to_ignore.append(dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] == ""].index)
+mask_iterate = mask_iterate + list(dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] == ""].index)
 mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_Scheduled"], format='YYYY-MM-DD') <= datetime.today()].index #get index of items due
-#append message "Follow-up due"
+dat_today.loc[mask, "New_Action"] = "Follow up"
+dat_today.loc[mask, "Followup_Scheduled"] = ""
+
+## Next

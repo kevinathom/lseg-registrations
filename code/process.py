@@ -62,7 +62,7 @@ mask_iterate = []
 ## Follow-up due
 mask_iterate = mask_iterate + list(dat_ongoing[dat_ongoing.loc[:, "Followup_Scheduled"] == ""].index)
 mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_Scheduled"], format='YYYY-MM-DD') <= datetime.today()].index #get index of items due
-dat_today.loc[mask, "New_Action"] = "Follow up"
-dat_today.loc[mask, "Followup_Scheduled"] = ""
+dat_ongoing.loc[mask, "New_Action"] = dat_ongoing.loc[mask, "New_Action"] + "Follow up. "
+dat_ongoing.loc[mask, "Followup_Scheduled"] = ""
 
 ## Next

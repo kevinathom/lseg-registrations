@@ -11,6 +11,7 @@ from itertools import compress
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
 dat_today_fname = f"TEST-ProductRegistrationSummaryRequest_20251202.csv"
 dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
+dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing only
 
 dat_today = pd.read_csv(dat_today_fname)
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
@@ -58,7 +59,9 @@ dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 # Prompt user to look up accounts and fill fields for next step
 
 # Re-access file
-dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+#following line is commented out for testing; swap with the next line for production
+#dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+dat_ongoing = pd.read_excel(dat_ongoing_fname2, na_values=[], keep_default_na=False)
 
 # Assess next actions
 mask_iterate = list(dat_ongoing.index)

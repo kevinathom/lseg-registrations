@@ -69,7 +69,7 @@ mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate
 
 mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_DueDate"], format='YYYY-MM-DD') <= datetime.today()].index
 dat_ongoing.loc[mask, "Email_Text"] = "Optional placeholder text for multiple accounts email template."
-dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Follow up. "
+dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Send follow-up email. "
 dat_ongoing.loc[mask, "Followup_DueDate"] = ""
 
 ## Alumni account
@@ -82,7 +82,13 @@ dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "R
 dat_ongoing.loc[mask, "New_Record"] = ""
 
 ## Missing account
+mask = dat_ongoing[dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] > 0].index
+mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
+mask = dat_ongoing[dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] == 0].index
+dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text for account created email template."
+dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Create an LSEG account and notify by email. "
+dat_ongoing.loc[mask, "New_Record"] = ""
 
 ## Wrong patron label
 
@@ -91,6 +97,9 @@ dat_ongoing.loc[mask, "New_Record"] = ""
 
 
 ## Multiple accounts
+
+
+## Remaining new records
 
 
 # Merge data to ongoing file

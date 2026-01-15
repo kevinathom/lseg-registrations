@@ -68,10 +68,29 @@ mask = dat_ongoing[dat_ongoing.loc[:, "Followup_DueDate"] == ""].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_DueDate"], format='YYYY-MM-DD') <= datetime.today()].index
+dat_ongoing.loc[mask, "Email_Text"] = "Optional placeholder text for multiple accounts email template."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Follow up. "
 dat_ongoing.loc[mask, "Followup_DueDate"] = ""
 
 ## Alumni account
+#Should other conditions trigger license removal?
+mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
+mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+
+mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni"].index
+dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Remove all licenses. "
+dat_ongoing.loc[mask, "New_Record"] = ""
+
+## Missing account
+
+
+## Wrong patron label
+
+
+## Missing licenses
+
+
+## Multiple accounts
 
 
 # Merge data to ongoing file

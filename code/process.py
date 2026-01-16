@@ -76,11 +76,13 @@ dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "S
 dat_ongoing.loc[mask, "Followup_DueDate"] = ""
 
 ## Alumni account
-#Should other conditions trigger license removal?
+#should other conditions trigger license removal
 mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
-mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni"].index
+#numeric comparison breaks boolean comparison--need to -1 or NaN missing values
+mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni" & dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] > 0].index
+mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Remove all licenses. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
@@ -89,6 +91,7 @@ mask = dat_ongoing[dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] > 0].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 mask = dat_ongoing[dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] == 0].index
+mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text for account created email template."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Create an LSEG account and notify by email. "
 dat_ongoing.loc[mask, "New_Record"] = ""

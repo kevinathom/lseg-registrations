@@ -9,9 +9,13 @@ from itertools import compress
 
 # Access files
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
+
 dat_today_fname = f"TEST-ProductRegistrationSummaryRequest_20251202.csv"
 dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
 dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing only
+#OR
+dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
+dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
 
 dat_today = pd.read_csv(dat_today_fname)
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
@@ -75,29 +79,30 @@ dat_ongoing.loc[mask, "Email_Text"] = "Optional placeholder text for multiple ac
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Send follow-up email. "
 dat_ongoing.loc[mask, "Followup_DueDate"] = ""
 
+## Wrong patron label
+
+
 ## Alumni account
 #should other conditions trigger license removal
 mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
-#numeric comparison breaks boolean comparison--need to -1 or NaN missing values
-mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni" & dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] > 0].index
+mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
+mask2 = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni"].index
+mask = list(compress(mask2, [i in set(mask) for i in mask2]))
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Remove all licenses. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
 ## Missing account
-mask = dat_ongoing[dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] > 0].index
+mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
-mask = dat_ongoing[dat_ongoing.loc[:, "Count_of_LSEG_Accounts"] == 0].index
+mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") == 0].index
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text for account created email template."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Create an LSEG account and notify by email. "
 dat_ongoing.loc[mask, "New_Record"] = ""
-
-## Wrong patron label
-
 
 ## Missing licenses
 

@@ -2,6 +2,7 @@
 import os
 import pandas as pd
 import re
+#import numpy as np
 from datetime import datetime
 from itertools import compress
 
@@ -80,6 +81,29 @@ dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "S
 dat_ongoing.loc[mask, "Followup_DueDate"] = ""
 
 ## Wrong patron label
+mask = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
+mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+
+for i in mask_iterate:
+  #print(dat_ongoing.loc[i, "Graduation Year"])
+  #print(pd.to_numeric(dat_ongoing.loc[i, "Graduation Year"], errors="coerce"))
+  #print(pd.to_numeric(dat_ongoing.loc[i, "Graduation Year"], errors="coerce").isnumeric())
+  if dat_ongoing.loc[i, "Graduation Year"] == "ALUM" and dat_ongoing.loc[i, "LABEL"] != "Alumni":
+    dat_ongoing.loc[i, "LABEL"] = "Alumni"
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change Label to Alumni. "
+  elif dat_ongoing.loc[i, "Graduation Year"] == "N/A" and bool(re.search(r"Staff", dat_ongoing.loc[i, "Notes"])) and dat_ongoing.loc[i, "LABEL"] != "Staff":
+    dat_ongoing.loc[i, "LABEL"] = "Staff"
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change Label to Staff. "
+  elif  and dat_ongoing.loc[i, "LABEL"] != "Faculty/PhD":
+    ### ADD CONDITIONS TO LINE ABOVE THIS ONE ###
+    #Correct conditions: "("Graduation Year" == "N/A" | numeric) & "Notes" contains "PhD" or "Faculty"
+    dat_ongoing.loc[i, "LABEL"] = "Faculty/PhD"
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Faculty/PhD. "
+  elif ( or dat_ongoing.loc[i, "Graduation Year"] == "Unknown") and dat_ongoing.loc[i, "LABEL"] != "Student":
+    ### FIX CHECK FOR YEAR VALUES ABOVE, tried isnumeric() and np.isnan(pd.to_numeric(dat_ongoing["Graduation Year"], errors="coerce"))
+    #Notes must not contain "PhD", which is handled by the elif sequence
+    dat_ongoing.loc[i, "LABEL"] = "Student"
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change Label to Student. "
 
 
 ## Alumni account
@@ -91,7 +115,7 @@ mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coer
 mask2 = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni"].index
 mask = list(compress(mask2, [i in set(mask) for i in mask2]))
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Remove all licenses. "
+dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Unassign all licenses. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
 ## Missing account

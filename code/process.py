@@ -99,7 +99,7 @@ for i in mask_iterate:
     dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Student. "
 
 ## Remove licenses
-mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
+mask = dat_ongoing[dat_ongoing.loc[:, "Has Licenses in backend"] == "Yes"].index
 mask2 = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni"].index
 mask = list(compress(mask2, [i in set(mask) for i in mask2]))
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
@@ -107,28 +107,35 @@ dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "U
 dat_ongoing.loc[mask, "New_Record"] = ""
 
 mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
+mask2 = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
+mask = list(compress(mask2, [i in set(mask) for i in mask2]))
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 ## Create account
-mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") == 0].index
+mask = sorted(list(set(list(dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") <= 0].index) + list(dat_ongoing[dat_ongoing.loc[:, "Appears in backend"] == "No"].index))))
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text for account created email template."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Create an LSEG account and notify by email. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
-mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
+mask = sorted(list(set(list(dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index) + list(dat_ongoing[dat_ongoing.loc[:, "Appears in backend"] == "Yes"].index))))
+mask2 = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
+mask = list(compress(mask2, [i in set(mask) for i in mask2]))
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-
-## Add licenses
-
 
 ## De-duplicate accounts
 
 
+## Add licenses
+mask = dat_ongoing[dat_ongoing.loc[:, "Has Licenses in backend"] == "No"].index
+mask2 = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
+mask = list(compress(mask2, [i in set(mask) for i in mask2]))
+mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Assign licenses. "
+
 ## No further action
-dat_ongoing.loc[mask_iterate, "New_Record"] = ""
+dat_ongoing.loc[:, "New_Record"] = ""
 
 # Merge data to ongoing file
-dat_ongoing["New_Record"] = ""
 dat_ongoing.sort_values(by=["Take_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
 dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)

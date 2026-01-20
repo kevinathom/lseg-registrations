@@ -13,7 +13,7 @@ os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
 
 dat_today_fname = f"TEST-ProductRegistrationSummaryRequest_20251202.csv"
 dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
-dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing only
+dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing stage 2 only
 #OR
 dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
 dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
@@ -85,26 +85,22 @@ mask = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 for i in mask_iterate:
-  #print(dat_ongoing.loc[i, "Graduation Year"])
-  #print(pd.to_numeric(dat_ongoing.loc[i, "Graduation Year"], errors="coerce"))
-  #print(pd.to_numeric(dat_ongoing.loc[i, "Graduation Year"], errors="coerce").isnumeric())
+  
   if dat_ongoing.loc[i, "Graduation Year"] == "ALUM" and dat_ongoing.loc[i, "LABEL"] != "Alumni":
     dat_ongoing.loc[i, "LABEL"] = "Alumni"
-    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change Label to Alumni. "
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Alumni. "
   elif dat_ongoing.loc[i, "Graduation Year"] == "N/A" and bool(re.search(r"Staff", dat_ongoing.loc[i, "Notes"])) and dat_ongoing.loc[i, "LABEL"] != "Staff":
     dat_ongoing.loc[i, "LABEL"] = "Staff"
-    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change Label to Staff. "
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Staff. "
   elif  and dat_ongoing.loc[i, "LABEL"] != "Faculty/PhD":
     ### ADD CONDITIONS TO LINE ABOVE THIS ONE ###
     #Correct conditions: "("Graduation Year" == "N/A" | numeric) & "Notes" contains "PhD" or "Faculty"
     dat_ongoing.loc[i, "LABEL"] = "Faculty/PhD"
-    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Faculty/PhD. "
-  elif ( or dat_ongoing.loc[i, "Graduation Year"] == "Unknown") and dat_ongoing.loc[i, "LABEL"] != "Student":
-    ### FIX CHECK FOR YEAR VALUES ABOVE, tried isnumeric() and np.isnan(pd.to_numeric(dat_ongoing["Graduation Year"], errors="coerce"))
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Faculty/PhD. "
+  elif (isinstance(dat_ongoing.loc[i, "Graduation Year"], int) or dat_ongoing.loc[i, "Graduation Year"] == "Unknown") and dat_ongoing.loc[i, "LABEL"] != "Student":
     #Notes must not contain "PhD", which is handled by the elif sequence
     dat_ongoing.loc[i, "LABEL"] = "Student"
-    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change Label to Student. "
-
+    dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Student. "
 
 ## Alumni account
 #should other conditions trigger license removal

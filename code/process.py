@@ -85,20 +85,16 @@ mask = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 for i in mask_iterate:
-  
   if dat_ongoing.loc[i, "Graduation Year"] == "ALUM" and dat_ongoing.loc[i, "LABEL"] != "Alumni":
     dat_ongoing.loc[i, "LABEL"] = "Alumni"
     dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Alumni. "
   elif dat_ongoing.loc[i, "Graduation Year"] == "N/A" and bool(re.search(r"Staff", dat_ongoing.loc[i, "Notes"])) and dat_ongoing.loc[i, "LABEL"] != "Staff":
     dat_ongoing.loc[i, "LABEL"] = "Staff"
     dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Staff. "
-  elif  and dat_ongoing.loc[i, "LABEL"] != "Faculty/PhD":
-    ### ADD CONDITIONS TO LINE ABOVE THIS ONE ###
-    #Correct conditions: "("Graduation Year" == "N/A" | numeric) & "Notes" contains "PhD" or "Faculty"
+  elif (isinstance(dat_ongoing.loc[i, "Graduation Year"], int) or dat_ongoing.loc[i, "Graduation Year"] == "N/A") and (bool(re.search(r"PhD", dat_ongoing.loc[i, "Notes"])) or bool(re.search(r"Faculty", dat_ongoing.loc[i, "Notes"]))) and dat_ongoing.loc[i, "LABEL"] != "Faculty/PhD":
     dat_ongoing.loc[i, "LABEL"] = "Faculty/PhD"
     dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Faculty/PhD. "
-  elif (isinstance(dat_ongoing.loc[i, "Graduation Year"], int) or dat_ongoing.loc[i, "Graduation Year"] == "Unknown") and dat_ongoing.loc[i, "LABEL"] != "Student":
-    #Notes must not contain "PhD", which is handled by the elif sequence
+  elif (isinstance(dat_ongoing.loc[i, "Graduation Year"], int) or dat_ongoing.loc[i, "Graduation Year"] == "Unknown") and not bool(re.search(r"PhD", dat_ongoing.loc[i, "Notes"])) and dat_ongoing.loc[i, "LABEL"] != "Student":
     dat_ongoing.loc[i, "LABEL"] = "Student"
     dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Student. "
 

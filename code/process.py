@@ -71,16 +71,16 @@ dat_ongoing = pd.read_excel(dat_ongoing_fname2, na_values=[], keep_default_na=Fa
 # Assess next actions
 mask_iterate = list(dat_ongoing.index)
 
-## Follow-up due
-mask = dat_ongoing[dat_ongoing.loc[:, "Followup_DueDate"] == ""].index
-mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-
+## Send follow-up
 mask = dat_ongoing[pd.to_datetime(dat_ongoing.loc[:, "Followup_DueDate"], format='YYYY-MM-DD') <= datetime.today()].index
 dat_ongoing.loc[mask, "Email_Text"] = "Optional placeholder text for multiple accounts email template."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Send follow-up email. "
 dat_ongoing.loc[mask, "Followup_DueDate"] = ""
 
-## Wrong patron label
+mask = dat_ongoing[dat_ongoing.loc[:, "Followup_DueDate"] == ""].index
+mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+
+## Fix patron label
 mask = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
@@ -98,11 +98,7 @@ for i in mask_iterate:
     dat_ongoing.loc[i, "LABEL"] = "Student"
     dat_ongoing.loc[i, "Take_Action"] = dat_ongoing.loc[i, "Take_Action"] + "Change LSEG Label to Student. "
 
-## Alumni account
-#should other conditions trigger license removal
-mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
-mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-
+## Remove licenses
 mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
 mask2 = dat_ongoing[dat_ongoing.loc[:, "LABEL"] == "Alumni"].index
 mask = list(compress(mask2, [i in set(mask) for i in mask2]))
@@ -110,24 +106,27 @@ mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Unassign all licenses. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
-## Missing account
-mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
+mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
+## Create account
 mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") == 0].index
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text for account created email template."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Create an LSEG account and notify by email. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
-## Missing licenses
+mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index
+mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+
+## Add licenses
 
 
-## Multiple accounts
+## De-duplicate accounts
 
 
-## Remaining new records
-
+## No further action
+dat_ongoing.loc[mask_iterate, "New_Record"] = ""
 
 # Merge data to ongoing file
 dat_ongoing["New_Record"] = ""

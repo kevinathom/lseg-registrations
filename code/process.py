@@ -2,7 +2,6 @@
 import os
 import pandas as pd
 import re
-#import numpy as np
 from datetime import datetime
 from itertools import compress
 
@@ -107,24 +106,25 @@ dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "U
 dat_ongoing.loc[mask, "New_Record"] = ""
 
 mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
-mask2 = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
-mask = list(compress(mask2, [i in set(mask) for i in mask2]))
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 ## Create account
 mask = sorted(list(set(list(dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") <= 0].index) + list(dat_ongoing[dat_ongoing.loc[:, "Appears in backend"] == "No"].index))))
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text for account created email template."
+dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text: Your account is ready."
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Create an LSEG account and notify by email. "
 dat_ongoing.loc[mask, "New_Record"] = ""
 
-mask = sorted(list(set(list(dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 0].index) + list(dat_ongoing[dat_ongoing.loc[:, "Appears in backend"] == "Yes"].index))))
-mask2 = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
-mask = list(compress(mask2, [i in set(mask) for i in mask2]))
+mask = dat_ongoing[dat_ongoing.loc[:, "New_Record"] != ""].index
 mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
 ## De-duplicate accounts
-
+mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 1].index
+mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+dat_ongoing.loc[mask, "Followup_DueDate"] = "DUE DATE TBD" ####should be today + N days
+dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text: You created accounts under {dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. Which would you prefer to keep?"
+dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Patron has multiple LSEG accounts; ask which they'd perfer to keep. "
+dat_ongoing.loc[mask, "New_Record"] = ""
 
 ## Add licenses
 mask = dat_ongoing[dat_ongoing.loc[:, "Has Licenses in backend"] == "No"].index

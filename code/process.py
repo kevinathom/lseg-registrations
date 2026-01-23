@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import re
 from datetime import datetime
+from datetime import timedelta
 from itertools import compress
 
 # Prompt user for files
@@ -121,7 +122,8 @@ mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate
 ## De-duplicate accounts
 mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 1].index
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-dat_ongoing.loc[mask, "Followup_DueDate"] = "DUE DATE TBD" ####should be today + N days
+dat_ongoing.loc[mask, "Followup_DueDate"] = "DUE DATE TBD" ####should be today + N days -- see next line for attempted logic
+pd.Series([pd.to_datetime((datetime.today() + timedelta(days = 7)), format='YYYY-MM-DD')]).dt.date
 dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text: You created accounts under {dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. Which would you prefer to keep?"
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Patron has multiple LSEG accounts; ask which they'd perfer to keep. "
 dat_ongoing.loc[mask, "New_Record"] = ""
@@ -137,5 +139,5 @@ dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "A
 dat_ongoing.loc[:, "New_Record"] = ""
 
 # Merge data to ongoing file
-dat_ongoing.sort_values(by=["Take_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
+dat_ongoing.sort_values(by=["Take_Action"], inplace=True, ignore_index=True)
 dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)

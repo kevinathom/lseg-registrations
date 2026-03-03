@@ -7,19 +7,28 @@ from datetime import timedelta
 from itertools import compress
 
 # Prompt user for files
+#AccountstoCheck
+#While there is another file for today
+##Today's file
+##Is there another file for today?
 
 # Access files
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
 
-dat_today_fname = f"TEST-ProductRegistrationSummaryRequest_20251202.csv"
+dat_today_fname = [f"TEST-ProductRegistrationSummaryRequest_20251202.csv"]
 dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
 dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing stage 2 only
 #OR
-dat_today_fname = f"ProductRegistrationSummaryRequest_20251202.csv"
+dat_today_fname = [f"ProductRegistrationSummaryRequest_20251202.csv"]
 dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
 
-dat_today = pd.read_csv(dat_today_fname)
+dat_today = [] # CHECK THIS NEW STUFF!
+for fname in dat_today_fname:
+  dat_today.append(pd.read_csv(fname)) # CHECK THIS NEW STUFF!
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+
+# Merge multiple new files
+dat_today = pd.concat(dat_today, sort=False, ignore_index=True).fillna("")
 
 # Remove full duplicate records from today's file
 dat_today.drop(dat_today[dat_today.duplicated(keep = 'first')].index, inplace=True)

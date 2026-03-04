@@ -7,19 +7,29 @@ from datetime import timedelta
 from itertools import compress
 
 # Prompt user for files
-os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
+## Start INTERFACE INTERACTION ##
+#Prompt user for the latest file named AccountstoCheck
+#Save the file name and path as a string in the object named dat_ongoing_fname
 
-dat_today_fname = [f"TEST-ProductRegistrationSummaryRequest_20251202.csv"]
-dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
-dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing stage 2 only
-#OR
-dat_today_fname = [f"ProductRegistrationSummaryRequest_20251202.csv"]
-dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
-
-#AccountstoCheck
+#Prompt user for one of today's product registration request files
+#Save the file name and path as a string in a list named dat_today_fname
+#Ask user if there are more product registration request files for today
 #While there is another file for today
-##Today's file
-##Is there another file for today?
+#Prompt user for another of today's product registration request files
+#Append the file name and path as a string to the list named dat_today_fname
+#Ask user if there are more product registration request files for today
+
+#Display to the user that this program is processing the files.
+## Pause INTERFACE INTERACTION ##
+
+# Manual file references -- TESTING ONLY
+#os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
+#dat_today_fname = [f"TEST-ProductRegistrationSummaryRequest_20251202.csv"]
+#dat_ongoing_fname = f"TEST-AccountstoCheck-LSEG.xlsx"
+#dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing stage 2 only
+#OR
+#dat_today_fname = [f"ProductRegistrationSummaryRequest_20251202.csv"]
+#dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
 
 # Access files
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
@@ -66,13 +76,22 @@ dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 # Attempt to append to file, but it overwrites anyway
 #dat_today.to_excel(dat_ongoing_fname, sheet_name="in", startrow=len(dat_ongoing.index)+1, columns=dat_today.columns.tolist(), index=False, header=False)
 
-# Prompt user to look up accounts and fill fields for next step
-##Interact to continue
+# Wait for user to look up accounts and fill fields in the main file
+## Resume INTERFACE INTERACTION ##
+#Tell user that the file named AccountstoCheck has been updated
+#Prompt user to look up accounts and fill fields for next step
+#Display a continue button and prompt user to press press it after they've updated and saved the file named AccountstoCheck
+
+#Wait for user to press the continue button
+#After user presses the continue button:
+#Compare the current contents of the file named in dat_ongoing_fname to dat_ongoing
+#If the contents are identical, re-propt the user to update the file named AccountstoCheck and press Continue again
+#Else, display to the user that this program is processing the files.
+## Pause INTERFACE INTERACTION ##
 
 # Re-access file
-#following line is commented out for testing; swap with the next line for production
-#dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
-dat_ongoing = pd.read_excel(dat_ongoing_fname2, na_values=[], keep_default_na=False)
+dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+#dat_ongoing = pd.read_excel(dat_ongoing_fname2, na_values=[], keep_default_na=False) #TESTING ONLY
 
 # Assess next actions
 mask_iterate = list(dat_ongoing.index)
@@ -146,3 +165,8 @@ dat_ongoing.loc[:, "New_Record"] = ""
 # Merge data to ongoing file
 dat_ongoing.sort_values(by=["Take_Action"], inplace=True, ignore_index=True)
 dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
+
+## Resume INTERFACE INTERACTION ##
+#Tell user that the file named AccountstoCheck has been updated and any recommended actions are noted in the file
+#Prompt the user to close the interface
+## Close the INTERFACE ##

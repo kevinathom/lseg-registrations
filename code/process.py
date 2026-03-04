@@ -23,7 +23,7 @@ dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
 
 # Access files
 dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
-file_date = re.search('\\_(.*)\\.', dat_today_fname).group(1)
+file_date = re.search('\\_(.*)\\.', dat_today_fname[0]).group(1)
 dat_today = pd.read_csv(dat_today_fname.pop(), na_values=[], keep_default_na=False)
 while len(dat_today_fname) > 0:
   dat_today = pd.concat([pd.read_csv(dat_today_fname.pop(), na_values=[], keep_default_na=False), dat_today], sort=False, ignore_index=True).fillna("")
@@ -67,6 +67,7 @@ dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 #dat_today.to_excel(dat_ongoing_fname, sheet_name="in", startrow=len(dat_ongoing.index)+1, columns=dat_today.columns.tolist(), index=False, header=False)
 
 # Prompt user to look up accounts and fill fields for next step
+##Interact to continue
 
 # Re-access file
 #following line is commented out for testing; swap with the next line for production
@@ -127,8 +128,7 @@ mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate
 ## De-duplicate accounts
 mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"], errors="coerce") > 1].index
 mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-dat_ongoing.loc[mask, "Followup_DueDate"] = "DUE DATE TBD" ####should be today + N days -- see next line for attempted logic
-pd.Series([pd.to_datetime((datetime.today() + timedelta(days = 7)), format='YYYY-MM-DD')]).dt.date
+dat_ongoing.loc[mask, "Followup_DueDate"] = pd.Series([pd.to_datetime((datetime.today() + timedelta(days = 7)), format='YYYY-MM-DD')]).dt.date
 dat_ongoing.loc[mask, "Email_Text"] = "Placeholder text: You created accounts under {dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. Which would you prefer to keep?"
 dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Patron has multiple LSEG accounts; ask which they'd perfer to keep. "
 dat_ongoing.loc[mask, "New_Record"] = ""

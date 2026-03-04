@@ -7,12 +7,6 @@ from datetime import timedelta
 from itertools import compress
 
 # Prompt user for files
-#AccountstoCheck
-#While there is another file for today
-##Today's file
-##Is there another file for today?
-
-# Access files
 os.chdir(f"C:/Users/kevinat/Documents/GitHub/lseg-registrations/res/")
 
 dat_today_fname = [f"TEST-ProductRegistrationSummaryRequest_20251202.csv"]
@@ -22,13 +16,19 @@ dat_ongoing_fname2 = f"TEST-AccountstoCheck-LSEG_part2.xlsx" #for testing stage 
 dat_today_fname = [f"ProductRegistrationSummaryRequest_20251202.csv"]
 dat_ongoing_fname = f"AccountstoCheck-LSEG.xlsx"
 
-dat_today = [] # CHECK THIS NEW STUFF!
-for fname in dat_today_fname:
-  dat_today.append(pd.read_csv(fname)) # CHECK THIS NEW STUFF!
-dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+#AccountstoCheck
+#While there is another file for today
+##Today's file
+##Is there another file for today?
 
-# Merge multiple new files
-dat_today = pd.concat(dat_today, sort=False, ignore_index=True).fillna("")
+# Access files
+dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
+file_date = re.search('\\_(.*)\\.', dat_today_fname).group(1)
+dat_today = pd.read_csv(dat_today_fname.pop(), na_values=[], keep_default_na=False)
+while len(dat_today_fname) > 0:
+  dat_today = pd.concat([pd.read_csv(dat_today_fname.pop(), na_values=[], keep_default_na=False), dat_today], sort=False, ignore_index=True).fillna("")
+
+dat_today["New_Record"] = file_date
 
 # Remove full duplicate records from today's file
 dat_today.drop(dat_today[dat_today.duplicated(keep = 'first')].index, inplace=True)
@@ -40,7 +40,6 @@ dat_today.reset_index(inplace=True, drop=True)
 # Flag potential issues
 dat_today["Email_local-part"] = dat_today["COMPANY EMAIL"].str.extract(r'(.+?(?=\@))')
 dat_today["New_Warning"] = ""
-file_date = re.search('\\_(.*)\\.', dat_today_fname).group(1)
 
 ## Alumni email
 mask = dat_today[dat_today["COMPANY EMAIL"].str.contains(r"(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)].index
@@ -59,9 +58,6 @@ dat_today.loc[mask, "New_Warning"] = dat_today.loc[mask, "New_Warning"] + f"Repe
 
 mask = dat_today[pd.merge(dat_today, dat_ongoing.drop_duplicates(subset=["Email_local-part"]), on=list(["Email_local-part"]), how='left', indicator=True).loc[:, '_merge'] == 'both'].index
 dat_today.loc[mask, "New_Warning"] = dat_today.loc[mask, "New_Warning"] + f"Email prefix from {file_date} exists in old file. "
-
-# Mark today's records as new
-dat_today["New_Record"] = file_date
 
 # Merge data to ongoing file
 dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)

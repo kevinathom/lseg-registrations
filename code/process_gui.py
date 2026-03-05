@@ -412,7 +412,7 @@ class App(tk.Tk):
             # Send follow-up
             mask = dat_ongoing[
                 pd.to_datetime(dat_ongoing.loc[:, "Followup_DueDate"],
-                               format="YYYY-MM-DD") <= datetime.today()].index
+                               format="%Y-%m-%d", errors="coerce") <= datetime.today()].index
             dat_ongoing.loc[mask, "Email_Text"]  = "Optional placeholder text for multiple accounts email template."
             dat_ongoing.loc[mask, "Take_Action"] = dat_ongoing.loc[mask, "Take_Action"] + "Send follow-up email. "
             dat_ongoing.loc[mask, "Followup_DueDate"] = ""
@@ -472,11 +472,9 @@ class App(tk.Tk):
             mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"],
                                              errors="coerce") > 1].index
             mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
-            dat_ongoing.loc[mask, "Followup_DueDate"] = pd.Series(
-                [pd.to_datetime((datetime.today() + timedelta(days=7)),
-                                format="YYYY-MM-DD")]).dt.date
+            dat_ongoing.loc[mask, "Followup_DueDate"] = (datetime.today() + timedelta(days=7)).date()
             dat_ongoing.loc[mask, "Email_Text"]  = (
-                "Placeholder text: You created accounts under " + {dat_ongoing.loc[mask, 'COMPANY EMAIL']} + " and __. Which would you prefer to keep?")
+                f"Placeholder text: You created accounts under {dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. Which would you prefer to keep?")
             dat_ongoing.loc[mask, "Take_Action"] += "Patron has multiple LSEG accounts; ask which to keep. "
             dat_ongoing.loc[mask, "New_Record"]   = ""
 

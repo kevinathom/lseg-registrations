@@ -180,9 +180,9 @@ class App(tk.Tk):
         for step in (
             "1. Open the AccountstoCheck file in Excel.",
             "2. Look up new accounts and fill in the required fields.",
-            "3. Review flagged accounts and remove them as needed."
-            "3. Save and close the file.",
-            "4. Return here and click Continue.",
+            "3. Review flagged accounts and remove them as needed.",
+            "4. Save and close the file.",
+            "5. Return here and click Continue.",
         ):
             tk.Label(hint, text=step, bg="#edf7f2", fg=self.TEXT,
                      font=("Helvetica", 10)).pack(anchor="w", padx=14)
@@ -342,7 +342,7 @@ class App(tk.Tk):
             dat_today["New_Warning"] = ""
 
             mask = dat_today[dat_today["COMPANY EMAIL"].str.contains(
-                r"(^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$)", na=False)].index
+                r"^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$", na=False)].index
             dat_today.loc[mask, "New_Warning"] += "Alumni-style email. "
 
             mask = dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep=False)].index
@@ -379,7 +379,7 @@ class App(tk.Tk):
             self.after(0, lambda: self._show_stage(2))
 
         except Exception as e:
-            self.after(0, lambda: self._on_error(e))
+            self.after(0, lambda exc=e: self._on_error(exc))
 
     # ── Stage 2 processing ────────────────────
 
@@ -495,7 +495,7 @@ class App(tk.Tk):
             self.after(0, lambda: self._show_stage(3))
 
         except Exception as e:
-            self.after(0, lambda: self._on_error(e))
+            self.after(0, lambda exc=e: self._on_error(exc))
 
     # ── Error handler ─────────────────────────
 

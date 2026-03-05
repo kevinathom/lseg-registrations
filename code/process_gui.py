@@ -17,8 +17,8 @@ from tkinter import ttk, filedialog, messagebox
 class App(tk.Tk):
     """Single-window wizard that walks the user through all processing stages."""
 
-    ACCENT  = "#1a6b4a"   # deep green
-    BG      = "#f5f5f0"   # warm off-white
+    ACCENT  = "#011f5b"   # Penn Blue
+    BG      = "#e1e4ec"   # Penn's lightest gray
     CARD    = "#ffffff"
     TEXT    = "#1c1c1c"
     SUBTEXT = "#5a5a5a"
@@ -86,7 +86,7 @@ class App(tk.Tk):
                      row=1, column=0, columnspan=3, sticky="w", padx=24, pady=(0, 16))
 
         # AccountstoCheck
-        tk.Label(f, text="AccountstoCheck (.xlsx)",
+        tk.Label(f, text="Accounts to Check ongoing file (.xlsx)",
                  bg=self.CARD, fg=self.TEXT,
                  font=("Helvetica", 10, "bold")).grid(row=2, column=0, sticky="w", padx=24)
         ongoing_entry = tk.Entry(f, textvariable=self.dat_ongoing_fname,
@@ -104,7 +104,7 @@ class App(tk.Tk):
                   cursor="hand2", padx=10, pady=4).grid(row=3, column=2, padx=(0, 24), sticky="w")
 
         # CSV list
-        tk.Label(f, text="Registration Request CSVs (today)",
+        tk.Label(f, text="Registration Request file(s) from today (.csv)",
                  bg=self.CARD, fg=self.TEXT,
                  font=("Helvetica", 10, "bold")).grid(row=4, column=0, columnspan=3,
                                                       sticky="w", padx=24)
@@ -179,7 +179,8 @@ class App(tk.Tk):
                  font=("Helvetica", 10, "bold")).pack(anchor="w", padx=14, pady=(10, 2))
         for step in (
             "1. Open the AccountstoCheck file in Excel.",
-            "2. Look up flagged accounts and fill in the required fields.",
+            "2. Look up new accounts and fill in the required fields.",
+            "3. Review flagged accounts and remove them as needed."
             "3. Save and close the file.",
             "4. Return here and click Continue.",
         ):
@@ -221,7 +222,7 @@ class App(tk.Tk):
                           highlightthickness=1, highlightbackground="#aad6c0")
         notice.pack(fill="x", padx=24, pady=(0, 20))
         tk.Label(notice,
-                 text="The AccountstoCheck file has been updated.\n"
+                 text="The Accounts to Check file has been updated.\n"
                       "Recommended actions are noted in the Take_Action column.",
                  bg="#edf7f2", fg=self.TEXT,
                  font=("Helvetica", 10), justify="left").pack(padx=14, pady=12, anchor="w")
@@ -276,7 +277,7 @@ class App(tk.Tk):
 
     def _browse_ongoing(self):
         path = filedialog.askopenfilename(
-            title="Select AccountstoCheck file",
+            title="Select Accounts to Check ongoing file",
             filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
         if path:
             self.dat_ongoing_fname.set(path)
@@ -284,7 +285,7 @@ class App(tk.Tk):
 
     def _add_csv(self):
         paths = filedialog.askopenfilenames(
-            title="Select registration request CSV(s)",
+            title="Select Registration Request file(s) from today",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
         for p in paths:
             if p not in self.dat_today_fnames:
@@ -307,7 +308,7 @@ class App(tk.Tk):
     # ── Stage 1 processing ────────────────────
 
     def _run_stage1(self):
-        self._show_stage(0, "Processing registration files, please wait…")
+        self._show_stage(0, "Processing registration request file(s). Please wait…")
         threading.Thread(target=self._stage1_worker, daemon=True).start()
 
     def _stage1_worker(self):
@@ -475,10 +476,8 @@ class App(tk.Tk):
                 [pd.to_datetime((datetime.today() + timedelta(days=7)),
                                 format="YYYY-MM-DD")]).dt.date
             dat_ongoing.loc[mask, "Email_Text"]  = (
-                "Placeholder text: You created accounts under "
-                "{dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. "
-                "Which would you prefer to keep?")
-            dat_ongoing.loc[mask, "Take_Action"] += "Patron has multiple LSEG accounts; ask which they'd prefer to keep. "
+                "Placeholder text: You created accounts under " + {dat_ongoing.loc[mask, 'COMPANY EMAIL']} + " and __. Which would you prefer to keep?")
+            dat_ongoing.loc[mask, "Take_Action"] += "Patron has multiple LSEG accounts; ask which to keep. "
             dat_ongoing.loc[mask, "New_Record"]   = ""
 
             # Add licenses

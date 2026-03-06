@@ -325,6 +325,7 @@ class App(tk.Tk):
                     sort=False, ignore_index=True).fillna("")
 
             dat_today["New_Record"] = file_date
+            dat_today["Processed"] = datetime.today().date()
 
             # Remove full duplicate records
             dat_today.drop(dat_today[dat_today.duplicated(keep="first")].index, inplace=True)
@@ -487,7 +488,7 @@ class App(tk.Tk):
 
             # Clear new-record flags and save
             dat_ongoing.loc[:, "New_Record"] = ""
-            dat_ongoing.sort_values(by=["Take_Action"], inplace=True, ignore_index=True)
+            dat_ongoing.sort_values(by=["Processed","Take_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
             dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 
             self.after(0, lambda: self._show_stage(3))

@@ -276,8 +276,12 @@ class App(tk.Tk):
     # ── File browser helpers ──────────────────
 
     def _browse_ongoing(self):
+        onedrive_dir = (os.environ.get("OneDrive")
+                        or os.environ.get("OneDriveConsumer")
+                        or os.path.expanduser("~"))
         path = filedialog.askopenfilename(
             title="Select Accounts to Check ongoing file",
+            initialdir=onedrive_dir,
             filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
         if path:
             self.dat_ongoing_fname.set(path)

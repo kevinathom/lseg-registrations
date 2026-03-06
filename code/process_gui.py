@@ -485,10 +485,19 @@ class App(tk.Tk):
             mask  = list(compress(mask2, [i in set(mask) for i in mask2]))
             mask  = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
             dat_ongoing.loc[mask, "Take_Action"] += "Assign licenses. "
+            
+            # Assign unique Number values to any rows where Number is empty
+            dat_ongoing.sort_values(by=["Number", "Processed","Take_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
+            existing_max = pd.to_numeric(dat_ongoing["Number"], errors="coerce").max()
+            next_num = int(existing_max) + 1 if pd.notna(existing_max) else 1
+            empty_num_mask = dat_ongoing[dat_ongoing["Number"].apply(lambda x: str(x).strip() == "")].index
+            for i in empty_num_mask:
+                dat_ongoing.loc[i, "Number"] = next_num
+                next_num += 1
 
             # Clear new-record flags and save
             dat_ongoing.loc[:, "New_Record"] = ""
-            dat_ongoing.sort_values(by=["Processed","Take_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)
+            dat_ongoing.sort_values(by=["Number"], inplace=True, ignore_index=True)
             dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 
             self.after(0, lambda: self._show_stage(3))

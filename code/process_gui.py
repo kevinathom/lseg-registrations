@@ -457,14 +457,13 @@ class App(tk.Tk):
             dat_ongoing.loc[mask, "Take_Action"] += "Unassign all licenses. "
             dat_ongoing.loc[mask, "New_Record"]   = ""
 
-            mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
+            mask = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index # Ignore alumni from here
             mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
             # Create account
-            mask = sorted(list(set(
-                list(dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"],
-                                               errors="coerce") <= 0].index) +
-                list(dat_ongoing[dat_ongoing.loc[:, "Appears in backend"] == "No"].index))))
+            mask = dat_ongoing[dat_ongoing.loc[:, "Appears in backend"] == "No"].index
+            mask2 = dat_ongoing[dat_ongoing.loc[:, "Has duplicate in backend"] == "No"].index
+            mask  = list(compress(mask2, [i in set(mask) for i in mask2]))
             mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
             dat_ongoing.loc[mask, "Email_Text"]  = "Placeholder text: Your account is ready."
             dat_ongoing.loc[mask, "Take_Action"] += "Create an LSEG account and notify by email. "
@@ -474,21 +473,28 @@ class App(tk.Tk):
             mask_iterate = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
 
             # De-duplicate accounts
-            mask = dat_ongoing[pd.to_numeric(dat_ongoing["Appears in backend"],
-                                             errors="coerce") > 1].index
+            mask = dat_ongoing[dat_ongoing.loc[:, "Has duplicate in backend"] == "Yes"].index
             mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
             dat_ongoing.loc[mask, "Followup_DueDate"] = (datetime.today() + timedelta(days=7)).date()
             dat_ongoing.loc[mask, "Email_Text"]  = (
                 f"Placeholder text: You created accounts under {dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. Which would you prefer to keep?")
             dat_ongoing.loc[mask, "Take_Action"] += "Patron has multiple LSEG accounts; ask which to keep. "
-            dat_ongoing.loc[mask, "New_Record"]   = ""
+            #dat_ongoing.loc[mask, "New_Record"]   = ""
 
             # Add licenses
             mask  = dat_ongoing[dat_ongoing.loc[:, "Has Licenses in backend"] == "No"].index
-            mask2 = dat_ongoing[dat_ongoing.loc[:, "LABEL"] != "Alumni"].index
+            mask2 = dat_ongoing[dat_ongoing.loc[:, "Has duplicate in backend"] == "No"].index
             mask  = list(compress(mask2, [i in set(mask) for i in mask2]))
             mask  = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
             dat_ongoing.loc[mask, "Take_Action"] += "Assign licenses. "
+            #dat_ongoing.loc[mask, "New_Record"]   = ""
+            
+            mask  = dat_ongoing[dat_ongoing.loc[:, "Has Licenses in backend"] == "No"].index
+            mask2 = dat_ongoing[dat_ongoing.loc[:, "Has duplicate in backend"] == "Yes"].index
+            mask  = list(compress(mask2, [i in set(mask) for i in mask2]))
+            mask  = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
+            dat_ongoing.loc[mask, "Take_Action"] += "Assign licenses if keeping this account. "
+            #dat_ongoing.loc[mask, "New_Record"]   = ""
             
             # Assign unique Number values to any rows where Number is empty
             dat_ongoing.sort_values(by=["Number", "Processed","Take_Action", "LAST NAME", "FIRST NAME", "COMPANY EMAIL"], inplace=True, ignore_index=True)

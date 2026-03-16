@@ -33,4 +33,4 @@ While the process does not integrate with proprietary systems to automate user l
 - The Python script [process_gui.py](/code/process_gui.py) holds the tool's latest code. It probably should be a later version of [process.py](/code/process.py), but the separate files avoided having to use the repository's history as a reference while implementing the tool's GUI.
 - The [proposed process flow diagram](/assets/flowchart_LSEG-2025-12_proposed.drawio.png) reflects a preliminary target process. The tool's final state may resemble this workflow broadly but deviates in some details.
 
-I compile an executable via this line in a terminal: `python -m PyInstaller --onefile -w 'control.py'`
+I compile an executable via this line in a terminal: `python -m PyInstaller --onefile -w 'process_gui.py'`

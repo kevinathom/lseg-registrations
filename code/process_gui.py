@@ -476,8 +476,8 @@ class App(tk.Tk):
             mask = dat_ongoing[dat_ongoing.loc[:, "Has duplicate in backend"] == "Yes"].index
             mask = list(compress(mask_iterate, [i in set(mask) for i in mask_iterate]))
             dat_ongoing.loc[mask, "Followup_DueDate"] = (datetime.today() + timedelta(days=7)).date()
-            dat_ongoing.loc[mask, "Email_Text"]  = (
-                f"Placeholder text: You created accounts under {dat_ongoing.loc[mask, 'COMPANY EMAIL']} and __. Which would you prefer to keep?")
+            for i in mask:
+                dat_ongoing.loc[i, "Email_Text"] = (f"Placeholder text: You created accounts under {dat_ongoing.loc[i, 'COMPANY EMAIL']} and __. Which would you prefer to keep?")
             dat_ongoing.loc[mask, "Take_Action"] += "Patron has multiple LSEG accounts; ask which to keep. "
             #dat_ongoing.loc[mask, "New_Record"]   = ""
 

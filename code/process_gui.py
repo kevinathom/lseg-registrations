@@ -317,58 +317,67 @@ class App(tk.Tk):
 
     def _stage1_worker(self):
         try:
+            # Read ongoing Excel file
             dat_ongoing_fname = self.dat_ongoing_fname.get()
-            dat_today_fname   = list(self.dat_today_fnames)   # copy
-
             dat_ongoing = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
-            file_date   = re.search(r'_(.*)\.', dat_today_fname[0]).group(1)
-            dat_today   = pd.read_csv(dat_today_fname.pop(), na_values=[], keep_default_na=False)
-            while len(dat_today_fname) > 0:
-                dat_today = pd.concat(
-                    [pd.read_csv(dat_today_fname.pop(), na_values=[], keep_default_na=False), dat_today],
-                    sort=False, ignore_index=True).fillna("")
+            
+            # Read all CSV files and append file date(s)
+            files = []
+            for fname in self.dat_today_fnames:
+                file_date = re.search(r'_(.*)\.', fname).group(1)
+                file_i = pd.read_csv(fname, na_values=[], keep_default_na=False)
+                file_i["New_Record"] = file_date
+                files.append(file_i)
+            dat_today = pd.concat(files, sort=False, ignore_index=True).fillna("")
 
-            dat_today["New_Record"] = file_date
-            dat_today["Processed"] = datetime.today().date()
-
-            # Remove full duplicate records
-            dat_today.drop(dat_today[dat_today.duplicated(keep="first")].index, inplace=True)
+            # Remove duplicate records
+            compare_cols = ["FIRST NAME", "LAST NAME", "COMPANY EMAIL", "LABEL"]
+            
+            dat_today.drop(dat_today[dat_today.duplicated(subset=compare_cols, keep="last")].index, inplace=True)
             dat_today.reset_index(inplace=True, drop=True)
 
             dat_today.drop(
                 dat_today[pd.merge(dat_today, dat_ongoing,
-                                   on=list(dat_today.columns),
+                                   on=compare_cols,
                                    how="left", indicator=True).loc[:, "_merge"] == "both"].index,
                 inplace=True)
             dat_today.reset_index(inplace=True, drop=True)
 
-            # Flag potential issues
-            dat_today["Email_local-part"] = dat_today["COMPANY EMAIL"].str.extract(r"(.+?(?=\@))")
+            # Add useful columns
             dat_today["New_Warning"] = ""
+            dat_today["Processed"] = datetime.today().date()
+            dat_today["Email_local-part"] = dat_today["COMPANY EMAIL"].str.extract(r"(.+?(?=\@))")
 
+            # Flag alumni email
             mask = dat_today[dat_today["COMPANY EMAIL"].str.contains(
                 r"^[a-zA-Z]+\.[a-zA-Z]+\.w[a-zA-Z]\d\d@[a-zA-Z]*\.*upenn\.edu$", na=False)].index
             dat_today.loc[mask, "New_Warning"] += "Alumni-style email. "
 
+            # Flag repeated name
             mask = dat_today[dat_today.loc[:, ["FIRST NAME", "LAST NAME"]].duplicated(keep=False)].index
-            dat_today.loc[mask, "New_Warning"] += f"Repeated name in {file_date} file. "
+            for i in mask:
+                dat_today.loc[i, "New_Warning"] += f"Multiple registrations for {dat_today.loc[i, 'FIRST NAME']} {dat_today.loc[i, 'LAST NAME']} on {dat_today.loc[i, 'New_Record']}. "
 
             mask = dat_today[pd.merge(
                 dat_today,
                 dat_ongoing.drop_duplicates(subset=["FIRST NAME", "LAST NAME"]),
                 on=["FIRST NAME", "LAST NAME"], how="left", indicator=True
             ).loc[:, "_merge"] == "both"].index
-            dat_today.loc[mask, "New_Warning"] += f"Name from {file_date} exists in old file. "
+            for i in mask:
+                dat_today.loc[i, "New_Warning"] += f"Re-registration for {dat_today.loc[i, 'FIRST NAME']} {dat_today.loc[i, 'LAST NAME']} on {dat_today.loc[i, 'New_Record']}. "
 
+            # Flag repeated email
             mask = dat_today[dat_today.loc[:, ["Email_local-part"]].duplicated(keep=False)].index
-            dat_today.loc[mask, "New_Warning"] += f"Repeated email prefix in {file_date} file. "
+            for i in mask:
+                dat_today.loc[i, "New_Warning"] += f"Multiple registrations for {dat_today.loc[i, 'Email_local-part']}@... on {dat_today.loc[i, 'New_Record']}. "
 
             mask = dat_today[pd.merge(
                 dat_today,
                 dat_ongoing.drop_duplicates(subset=["Email_local-part"]),
                 on=["Email_local-part"], how="left", indicator=True
             ).loc[:, "_merge"] == "both"].index
-            dat_today.loc[mask, "New_Warning"] += f"Email prefix from {file_date} exists in old file. "
+            for i in mask:
+                dat_today.loc[i, "New_Warning"] += f"Re-registration for {dat_today.loc[i, 'Email_local-part']}@... on {dat_today.loc[i, 'New_Record']}. "
 
             # Merge and save
             dat_today.sort_values(by=["LAST NAME", "FIRST NAME", "COMPANY EMAIL"],
@@ -401,8 +410,8 @@ class App(tk.Tk):
 
         if dat_reloaded.equals(self.dat_ongoing_snap):
             self.s2_warn.config(
-                text="⚠  The file does not appear to have been updated yet.\n"
-                     "   Please fill in the required fields, save the file, then click Continue.")
+                text="⚠  The file does not appear to have been updated.\n"
+                     "   Please complete the required fields, save the file, then click Continue.")
             return
 
         self._show_stage(0, "Assessing actions, please wait…")

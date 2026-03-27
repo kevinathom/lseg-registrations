@@ -387,8 +387,9 @@ class App(tk.Tk):
             dat_ongoing.to_excel(dat_ongoing_fname, sheet_name="in", index=False)
 
             # Snapshot for change-detection in stage 2
+            # Re-read the file so the snapshot has the datetype Excel produces
             self.dat_ongoing_ref  = dat_ongoing
-            self.dat_ongoing_snap = copy.deepcopy(dat_ongoing)
+            self.dat_ongoing_snap = pd.read_excel(dat_ongoing_fname, na_values=[], keep_default_na=False)
 
             self.after(0, lambda: self._show_stage(2))
 
